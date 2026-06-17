@@ -2,6 +2,7 @@
 `define SIZE 3
 `define DATA_WIDTH 8
 `define OUT_WIDTH 24
+`define HALF_WIDTH = `DATA_WIDTH / 2
 
 package fft_pkg;  
 localparam logic signed [15:0] twiddle_real [0:3] = '{
