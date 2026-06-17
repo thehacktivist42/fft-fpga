@@ -69,14 +69,16 @@ module add_sub(
             k = 0;
             jump = `HALF_WIDTH/num;
             for (j=0; j<`WIDTH; j= j + 1) begin
-                if (i!=0) begin 
-                if (i % 2 != 0) begin
-                    complex_multiply(twiddle_real[k], twiddle_imag[k], inter1_real[j], inter1_imag[j], inter1_real[j], inter1_imag[j]);
-                end else begin
-                    complex_multiply(twiddle_real[k], twiddle_imag[k], inter2_real[j], inter2_imag[j], inter2_real[j], inter2_imag[j]);
+                if (i != 0) begin 
+                    if (i % 2 != 0) begin
+                        complex_multiply(twiddle_real[k], twiddle_imag[k], inter1_real[j], inter1_imag[j], inter1_real[j], inter1_imag[j]);
+                    end 
+                    else begin
+                        complex_multiply(twiddle_real[k], twiddle_imag[k], inter2_real[j], inter2_imag[j], inter2_real[j], inter2_imag[j]);
+                    end
+                    k = k + jump; 
+                    if (k > `HALF_WIDTH) k = 0;
                 end
-                k = k + jump; 
-                if (k > `HALF_WIDTH) k = 0;
             end
             for (j = 0; j < `WIDTH; j = j + 1) begin
                 if (i == 0) begin
