@@ -1,23 +1,20 @@
-`define WIDTH 8
-`define SIZE 3
-`define DATA_WIDTH 24
-`define OUT_WIDTH 24
+`define WIDTH 16
+`define SIZE 4
+`define OUT_WIDTH (`WIDTH + 16)
 `define HALF_WIDTH (`WIDTH / 2)
 
-module twiddle_factors(output logic signed[15:0]twiddle_real[3:0], 
-                        output logic signed[15:0]twiddle_imag[3:0]);
+
+module twiddle_factors(output logic signed[15:0]twiddle_real[`HALF_WIDTH-1:0], 
+                        output logic signed[15:0]twiddle_imag[`HALF_WIDTH-1:0]);
     initial begin
-
-        twiddle_real[0] = 16'sd32767;
-        twiddle_real[1] = 16'sd23170;
-        twiddle_real[2] = 16'sd0;
-        twiddle_real[3] = -16'sd23170;
-
-        twiddle_imag[0] = 16'sd0;
-        twiddle_imag[1] = -16'sd23170;
-        twiddle_imag[2] = -16'sd32767;
-        twiddle_imag[3] =  -16'sd23170;
-
+        twiddle_real[0] = 16'sd32767; twiddle_imag[0] = 16'sd0;
+        twiddle_real[1] = 16'sd30274; twiddle_imag[1] = -16'sd12540;
+        twiddle_real[2] = 16'sd23170; twiddle_imag[2] = -16'sd23170;
+        twiddle_real[3] = 16'sd12540; twiddle_imag[3] = -16'sd30274;
+        twiddle_real[4] = 16'sd0; twiddle_imag[4] = -16'sd32768;
+        twiddle_real[5] = -16'sd12540; twiddle_imag[5] = -16'sd30274;
+        twiddle_real[6] = -16'sd23170; twiddle_imag[6] = -16'sd23170;
+        twiddle_real[7] = -16'sd30274; twiddle_imag[7] = -16'sd12540;  
     end
 
 endmodule
@@ -38,14 +35,14 @@ module bit_reversal(
 endmodule
 
 module add_sub(
-    input signed [`DATA_WIDTH-1:0] in_real[`WIDTH-1:0],
-    input signed [`DATA_WIDTH-1:0] in_imag[`WIDTH-1:0],
+    input signed [`OUT_WIDTH-1:0] in_real[`WIDTH-1:0],
+    input signed [`OUT_WIDTH-1:0] in_imag[`WIDTH-1:0],
     output reg signed [`OUT_WIDTH-1:0] out_real[`WIDTH-1:0],
     output reg signed [`OUT_WIDTH-1:0] out_imag[`WIDTH-1:0]
 );
 
-    logic signed[15:0] twiddle_real[3:0];
-    logic signed[15:0] twiddle_imag[3:0];
+    logic signed[15:0] twiddle_real[`HALF_WIDTH-1:0];
+    logic signed[15:0] twiddle_imag[`HALF_WIDTH-1:0];
 
     twiddle_factors uut(twiddle_real, twiddle_imag);
 
@@ -66,8 +63,8 @@ module add_sub(
         output reg signed [`OUT_WIDTH - 1:0] out_real;
         output reg signed [`OUT_WIDTH - 1:0] out_imag;
 
-        logic signed [39:0] temp_real;
-        logic signed [39:0] temp_imag;
+        logic signed [`OUT_WIDTH + 15:0] temp_real;
+        logic signed [`OUT_WIDTH + 15:0] temp_imag;
 
         begin
 
@@ -81,7 +78,7 @@ module add_sub(
 
     endtask
 
-    always @(*) begin
+    always @(in_real[0] or in_imag[0]) begin
         for (i = 0; i < `SIZE; i = i + 1) begin
             num = 2**i;
             k = 0;
@@ -104,12 +101,13 @@ module add_sub(
             for (j = 0; j < `WIDTH; j = j + 1) begin
                 if (i == 0) begin
                     if ((j & num) == 0) begin
-                        inter1_real[j] = in_real[j] + in_real[j + num];
-                        inter1_imag[j] = in_imag[j] + in_imag[j + num];
+                        inter1_real[j] = in_real[j] + in_real[j + 1];
+                        inter1_imag[j] = in_imag[j] + in_imag[j + 1];
                     end
                     else begin
-                        inter1_real[j] = in_real[j - num] - in_real[j];
-                        inter1_imag[j] = in_imag[j - num] - in_imag[j];
+                        $display("sub");
+                        inter1_real[j] = in_real[j - 1] - in_real[j];
+                        inter1_imag[j] = in_imag[j - 1] - in_imag[j];
                     end
                 end
                 else begin
@@ -143,6 +141,7 @@ module add_sub(
                 out_real[i] = inter1_real[i];
                 out_imag[i] = inter1_imag[i];
             end
+            
         end
     end
 endmodule
