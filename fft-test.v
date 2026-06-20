@@ -78,12 +78,12 @@
             #10;
             end_time = $realtime;
 
-            for (i = 0; i < `WIDTH; i = i + 1) begin
+            for (i = 1; i < `WIDTH + 1; i = i + 1) begin
 
-                display_real = $signed(out_real[i]);
-                display_imag = $signed(out_imag[i]);
+                display_real = $signed(out_real[i - 1]);
+                display_imag = $signed(out_imag[i - 1]);
 
-                if (i == `WIDTH - 1) begin
+                if (i == `WIDTH) begin
                     $fdisplay(file_out, "  \"out_%0d\": [\n    %f,\n    %f\n  ]", 
                           i, display_real / 32768.0, display_imag / 32768.0);
                 end 
