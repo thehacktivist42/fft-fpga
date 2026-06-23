@@ -22,6 +22,9 @@ module add_sub (
         b_real <= in2_real;
         b_imag <= in2_imag;
         //STAGE 2
+    end
+
+    always @(posedge clk) begin
         out1_real  <= a_real + b_real;
         out1_imag  <= a_imag + b_imag;
         out2_real  <= a_real - b_real;
