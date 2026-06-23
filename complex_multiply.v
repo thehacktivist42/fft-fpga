@@ -1,7 +1,7 @@
 `timescale 1 ns / 1 ps
 
 `define WIDTH 1024
-`define SIZE 10
+`define SIZE $clog2(`WIDTH)
 `define HALF_WIDTH (`WIDTH / 2)
 
 `define DATA_WIDTH 32

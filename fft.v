@@ -15,7 +15,6 @@
 `include "buffers.v"
 
 module fft(
-    input 
     input signed [`OUT_WIDTH-1:0] in_real[`WIDTH-1:0],
     input signed [`OUT_WIDTH-1:0] in_imag[`WIDTH-1:0],
     output reg signed [`OUT_WIDTH-1:0] out_real[`WIDTH-1:0],

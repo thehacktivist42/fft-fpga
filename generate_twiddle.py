@@ -1,11 +1,11 @@
 import math
 
-WIDTH = 1024
-HALF_WIDTH = WIDTH // 2
+WIDTH = 16
+QUARTER_WIDTH = WIDTH // 4
 SCALE = 32768.0
 
 with open("data/fft/twiddles_real.hex", "w") as f_real, open("data/fft/twiddles_imag.hex", "w") as f_imag:
-    for k in range(HALF_WIDTH):
+    for k in range(QUARTER_WIDTH):
         # Calculate complex exponential (e^(-j * 2pi * k / N))
         angle = -2.0 * math.pi * k / WIDTH
         
@@ -25,4 +25,4 @@ with open("data/fft/twiddles_real.hex", "w") as f_real, open("data/fft/twiddles_
         f_real.write(f"{real_int:04X}\n")
         f_imag.write(f"{imag_int:04X}\n")
 
-print(f"Generated {HALF_WIDTH} twiddle factors.")
+print(f"Generated {QUARTER_WIDTH} twiddle factors.")
