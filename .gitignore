@@ -1,5 +1,5 @@
 test
 *.vcd
-test1.sv
-test1-test.sv
+test1.v
+test1-test.v
 *.asv
