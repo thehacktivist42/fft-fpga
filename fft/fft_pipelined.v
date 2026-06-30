@@ -1,7 +1,6 @@
 `timescale 1ns/1ps
 
 `include "submodules/stage.v"
-`include "submodules/bit-reversal.v"
 
 module fft_top #(
     parameter WIDTH = 1024,
