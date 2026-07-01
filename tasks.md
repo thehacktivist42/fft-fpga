@@ -1,4 +1,5 @@
 ## FFT
+- pipeline flush- minimize
 - polyphase demux
 - ping pong buffer
 - scheduler
