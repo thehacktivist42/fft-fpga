@@ -8,6 +8,7 @@ data = readmatrix("data/input.txt");
 X = data(:, 1) + 1i * data(:, 2);
 tic;
 X_fft = fft(X, N);
+X_fft = bitrevorder(X_fft);
 elapsedTime = toc;
 disp(['Exeuction time: ', num2str(elapsedTime), ' seconds']);
 X_fft_real = real(X_fft);

@@ -3,7 +3,7 @@
 `include "submodules/stage.v"
 
 module fft_top #(
-    parameter WIDTH = 1024,
+    parameter WIDTH = 16,
     parameter IN_WIDTH = 36,
     parameter TWIDDLE_WIDTH = 16
 )(

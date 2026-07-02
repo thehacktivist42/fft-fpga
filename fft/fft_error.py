@@ -12,8 +12,9 @@ def main():
         print("Error: Verilog output JSON not found.")
         return
     
-    verilog_real = np.zeros(WIDTH+1)
-    verilog_imag = np.zeros(WIDTH+1)
+    # Sized to exactly WIDTH (1024)
+    verilog_real = np.zeros(WIDTH)
+    verilog_imag = np.zeros(WIDTH)
 
     try:
         with open("data/ref.json", "r") as f:
@@ -22,62 +23,128 @@ def main():
         print("Error: MATLAB reference JSON not found.")
         return
     
-    matlab_real = np.zeros(WIDTH+1)
-    matlab_imag = np.zeros(WIDTH+1)
+    # Sized to exactly WIDTH (1024)
+    matlab_real = np.zeros(WIDTH)
+    matlab_imag = np.zeros(WIDTH)
 
     for i in range(1, WIDTH+1):
         key_in = f"in_{i}"
         key_out = f"out_{i}"
+        
+        # Shift to 0-based indexing by subtracting 1
         if key_in in matlab_data:
-            matlab_real[i] = matlab_data[key_in][0]
-            matlab_imag[i] = matlab_data[key_in][1]
+            matlab_real[i-1] = matlab_data[key_in][0]
+            matlab_imag[i-1] = matlab_data[key_in][1]
         else:
             print(f"Warning: Key {key_in} missing in MATLAB JSON.")
+            
         if key_out in verilog_data:
-            verilog_real[i] = verilog_data[key_out][0]
-            verilog_imag[i] = verilog_data[key_out][1]
+            verilog_real[i-1] = verilog_data[key_out][0]
+            verilog_imag[i-1] = verilog_data[key_out][1]
         else:
             print(f"Warning: Key {key_out} missing in Verilog JSON.")
+            
     print("\nCalculating Error Metrics...")
 
-    mse_real = np.mean((matlab_real - verilog_real)**2)
-    mse_imag = np.mean((matlab_imag - verilog_imag)**2)
-    
-    rmse_real = np.sqrt(mse_real)
-    rmse_imag = np.sqrt(mse_imag)
-    
-    max_err_real = np.max(np.abs(matlab_real - verilog_real))
-    max_err_imag = np.max(np.abs(matlab_imag - verilog_imag))
+    # Construct complex-valued vectors
+    matlab_complex = matlab_real + 1j * matlab_imag
+    verilog_complex = verilog_real + 1j * verilog_imag
 
-    print("-" * 40)
-    print(" FFT Verification Results ")
-    print("-" * 40)
-    print(f"Real Part MSE:  {mse_real:.6f}")
-    print(f"Imag Part MSE:  {mse_imag:.6f}")
-    print("-" * 40)
-    print(f"Real Part RMSE: {rmse_real:.6f}")
-    print(f"Imag Part RMSE: {rmse_imag:.6f}")
-    print("-" * 40)
-    print(f"Max Real Error: {max_err_real:.6f}")
-    print(f"Max Imag Error: {max_err_imag:.6f}")
-    print("-" * 40)
+    print("\n" + "="*90)
+    print("                     FIRST 20 FFT BINS COMPARISON")
+    print("="*90)
+    print(f"{'Bin':>4} | {'MATLAB (Re, Im)':>28} | {'Verilog (Re, Im)':>28} | {'Error (Re, Im)':>28}")
+    print("-"*90)
 
-    print("\nCalculating Percentage Error...")
-    
-    matlab_magnitude = np.sqrt(matlab_real**2 + matlab_imag**2)
-    peak_magnitude = np.max(matlab_magnitude)
-    
-    if peak_magnitude > 0:
-        pct_error_real = (rmse_real / peak_magnitude) * 100
-        pct_error_imag = (rmse_imag / peak_magnitude) * 100
+    for i in range(20):
+        err = verilog_complex[i] - matlab_complex[i]
+
+        print(
+            f"{i:4d} | "
+            f"({matlab_real[i]:9.0f}, {matlab_imag[i]:9.0f}) | "
+            f"({verilog_real[i]:9.0f}, {verilog_imag[i]:9.0f}) | "
+            f"({err.real:9.0f}, {err.imag:9.0f})"
+        )
+
+    print("="*90)
+
+    # Complex error vector
+    error = verilog_complex - matlab_complex
+
+    # RMSE
+    rmse = np.sqrt(np.mean(np.abs(error) ** 2))
+
+    # Reference RMS
+    reference_rms = np.sqrt(np.mean(np.abs(matlab_complex) ** 2))
+
+    # Normalized RMSE
+    if reference_rms > 0:
+        nrmse = rmse / reference_rms
     else:
-        pct_error_real = 0.0
-        pct_error_imag = 0.0
-        
-    print(f"Peak Signal Magnitude: {peak_magnitude:.2f}")
-    print(f"Real Part % Error:     {pct_error_real:.6f}%")
-    print(f"Imag Part % Error:     {pct_error_imag:.6f}%")
-    print("-" * 40)
+        nrmse = 0.0
+
+    # Percentage
+    nrmse_percent = nrmse * 100
+
+    # Additional useful metrics
+    max_abs_error = np.max(np.abs(error))
+    mean_abs_error = np.mean(np.abs(error))
+
+    error = verilog_complex - matlab_complex
+
+    print(np.mean(error))
+
+    error = error - np.mean(error)
+    # Add a tiny epsilon to prevent divide-by-zero in empty FFT bins
+    epsilon = 1e-12 
+
+    # Calculate magnitude percentage error per bin safely
+    bin_percent_error = (np.abs(error) / (np.abs(matlab_complex) + epsilon)) * 100
+
+    # Print the overall mean and maximum percentage errors
+    print(f"Mean Bin Percentage Error : {np.mean(bin_percent_error):.6f}%")
+    print(f"Max Bin Percentage Error  : {np.max(bin_percent_error):.6f}%")
+
+    rmse = np.sqrt(np.mean(np.abs(error)**2))
+    reference = np.sqrt(np.mean(np.abs(matlab_complex)**2))
+
+    print(rmse/reference*100)
+
+    print("Mean complex error :", np.mean(error))
+    print("Mean real error    :", np.mean(error.real))
+    print("Mean imag error    :", np.mean(error.imag))
+
+    print("Std real error     :", np.std(error.real))
+    print("Std imag error     :", np.std(error.imag))
+
+    print("-" * 50)
+    print(" FFT Verification Results ")
+    print("-" * 50)
+    print(f"Complex RMSE           : {rmse:.8f}")
+    print(f"Reference RMS          : {reference_rms:.8f}")
+    print(f"Normalized RMSE        : {nrmse:.8f}")
+    print(f"Normalized RMSE (%)    : {nrmse_percent:.6f}%")
+    print(f"Mean Absolute Error    : {mean_abs_error:.8f}")
+    print(f"Maximum Absolute Error : {max_abs_error:.8f}")
+    print("-" * 50)
+    ratio = np.mean(np.abs(verilog_complex)) / np.mean(np.abs(matlab_complex))
+    print(ratio)
+    mag_ref = np.abs(matlab_complex)
+    mag_fpga = np.abs(verilog_complex)
+
+    mag_err = mag_fpga - mag_ref
+
+    print("Mean magnitude error:", np.mean(mag_err))
+    print("Std magnitude error :", np.std(mag_err))
+    rho = np.vdot(matlab_complex, verilog_complex) / (
+    np.linalg.norm(matlab_complex) * np.linalg.norm(verilog_complex)
+    )
+    print(abs(rho))
+    evm = (
+    np.sqrt(np.mean(np.abs(verilog_complex - matlab_complex)**2))
+    / np.sqrt(np.mean(np.abs(matlab_complex)**2))
+    ) * 100 
+    print("EVM:", evm)
 
 if __name__ == "__main__":
     main()

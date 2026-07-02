@@ -36,11 +36,11 @@ module complex_multiply #(
         end
     end
 
-    assign real_full = $signed({prr[47], prr}) -
-                       $signed({pii[47], pii});
+    assign real_full = $signed({prr[PROD_WIDTH - 1], prr}) -
+                       $signed({pii[PROD_WIDTH - 1], pii});
 
-    assign imag_full = $signed({pri[47], pri}) +
-                       $signed({pir[47], pir});
+    assign imag_full = $signed({pri[PROD_WIDTH - 1], pri}) +
+                       $signed({pir[PROD_WIDTH - 1], pir});
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin

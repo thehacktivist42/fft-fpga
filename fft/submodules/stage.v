@@ -64,21 +64,19 @@ module stage #(
 
     // Initialization counter to track when buffer garbage is fully flushed
     logic [$clog2(DELAY+1):0] init_cnt;
-    logic buff_out_valid;
+    wire buff_out_valid;
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             init_cnt <= '0;
-            buff_out_valid <= 1'b0;
         end else begin
             if (init_cnt < DELAY) begin
                 init_cnt <= init_cnt + 1;
-                buff_out_valid <= 1'b0;
-            end else begin
-                buff_out_valid <= 1'b1;
             end
         end
     end
+
+    assign buff_out_valid = (init_cnt == DELAY);
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -174,6 +172,7 @@ module stage #(
 
     // multiply twiddle factor with even input
     complex_multiply #(
+        .FFT_WIDTH(IN_WIDTH),
         .TWIDDLE_WIDTH(TWIDDLE_WIDTH))
         cmplx_mult_inst(
             .clk(clk),
