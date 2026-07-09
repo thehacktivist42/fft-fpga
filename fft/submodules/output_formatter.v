@@ -56,8 +56,8 @@ module output_formatter #(
     assign out_valid = pipeline_full;
     assign read_count_out = read_count;
 
-    wire signed [IN_WIDTH - 1:0] scaled_real = mem_real[physical_raddr] >>> SCALING_FACTOR;
-    wire signed [IN_WIDTH - 1:0] scaled_imag = mem_imag[physical_raddr] >>> SCALING_FACTOR;
+    wire signed [IN_WIDTH - 1:0] scaled_real = mem_real[physical_raddr];
+    wire signed [IN_WIDTH - 1:0] scaled_imag = mem_imag[physical_raddr];
 
     assign zak_out_real = out_valid ? scaled_real : '0;
     assign zak_out_imag = out_valid ? scaled_imag : '0;
@@ -90,7 +90,5 @@ module output_formatter #(
             end
         end
     end
-
-
 
 endmodule

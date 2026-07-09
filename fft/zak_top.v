@@ -93,6 +93,16 @@ module zak_top #(
         .out_imag(fft_in_imag)
     );
 
+    logic [$clog2(BANK_DEPTH)-1:0] bank_raddr_d;
+
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            bank_raddr_d <= '0;
+        end else begin
+            bank_raddr_d <= bank_raddr;
+        end
+    end
+
     // FFT to Output Formatter
     logic signed [IN_WIDTH-1:0] fft_out_real;
     logic signed [IN_WIDTH-1:0] fft_out_imag;
@@ -107,7 +117,7 @@ module zak_top #(
         .rst_n(rst_n),
         .in_real(fft_in_real),
         .in_imag(fft_in_imag),
-        .sample_count(bank_raddr),
+        .sample_count(bank_raddr_d),
         .out_real(fft_out_real),
         .out_imag(fft_out_imag),
         .out_sample_count(fft_sample_count_out)

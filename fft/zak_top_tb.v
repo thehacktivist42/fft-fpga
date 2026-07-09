@@ -28,6 +28,7 @@ module tb_zak_top;
     wire signed [IN_WIDTH-1:0] out_real;
     wire signed [IN_WIDTH-1:0] out_imag;
     wire out_valid;
+    integer samples_written = 0;
 
     //--------------------------------------------------------
     // DUT: Zak Top
@@ -48,18 +49,25 @@ module tb_zak_top;
     );
 
     //--------------------------------------------------------
-    // File I/O Descriptor
+    // File I/O Descriptors
     //--------------------------------------------------------
-    integer file_handle;
+    integer data_file;
+    integer debug_file;
 
     //--------------------------------------------------------
     // Stimulus
     //--------------------------------------------------------
     initial begin
-        // 1. Open the file for writing ("w")
-        file_handle = $fopen("hardware_output.txt", "w");
-        if (file_handle == 0) begin
+        // Open the files for writing
+        data_file  = $fopen("hardware_output.txt", "w");
+        debug_file = $fopen("zak_debug_log.txt", "w");
+        
+        if (data_file == 0) begin
             $display("ERROR: Could not open hardware_output.txt for writing!");
+            $finish;
+        end
+        if (debug_file == 0) begin
+            $display("ERROR: Could not open zak_debug_log.txt for writing!");
             $finish;
         end
 
@@ -70,11 +78,10 @@ module tb_zak_top;
 
         repeat (10) @(posedge clk);
         rst_n = 1;
-        @(posedge clk);
 
         // Feed one complete frame (1024 samples)
         for (int i = 0; i < WIDTH; i++) begin
-            in_real <= i; 
+            in_real <= (i << 15); 
             in_imag <= 0;
             @(posedge clk);
         end
@@ -82,26 +89,22 @@ module tb_zak_top;
         in_real <= 0;
         in_imag <= 0;
         
-        repeat (2000) @(posedge clk);
+        wait (samples_written == WIDTH);
 
-        // 2. Close the file before finishing the simulation
-        $fclose(file_handle);
+        // Close the files before finishing the simulation
+        $fclose(data_file);
+        $fclose(debug_file);
         $finish;
     end
 
     //--------------------------------------------------------
-    // Output Monitor
+    // Output Monitor (Original Data Logging)
     //--------------------------------------------------------
-    integer samples_written = 0;
     always @(posedge clk) begin
-        if (out_valid && !$isunknown(out_real) && samples_written < 1024) begin
-            // 3. Write purely the raw numbers to the text file (space separated)
-            $fdisplay(file_handle, "%0d %0d", out_real, out_imag);
+        if (out_valid && !$isunknown(out_real) && samples_written < WIDTH) begin
+            // Write purely the raw numbers to the text file (space separated)
+            $fdisplay(data_file, "%0f %0f", real'(out_real) / 32768.0, real'(out_imag) / 32768.0);
             samples_written++;
-            
-            // Keep the console print so you can still watch the simulation run
-            $display("Time: %10t | Valid Out -> Real: %8d | Imag: %8d", 
-                     $time, out_real, out_imag);
         end
     end
 

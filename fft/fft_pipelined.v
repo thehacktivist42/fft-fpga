@@ -89,4 +89,5 @@ module fft_top #(
     assign out_real = stage_real[NUM_STAGES];
     assign out_imag = stage_imag[NUM_STAGES];
     assign out_sample_count = stage_count[NUM_STAGES];
+
 endmodule
