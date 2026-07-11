@@ -1,8 +1,4 @@
 ## FFT
-- pipeline flush- minimize
-- polyphase demux
-- ping pong buffer
-- scheduler
-- output formatter
 - add valid signals
+- edge case- fft doesnt work for n = 4
 - 

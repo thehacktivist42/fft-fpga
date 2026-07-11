@@ -12,7 +12,7 @@ module polyphase_demux #(
     parameter BANK_DEPTH = 32 // the N in the M x N representation of the transform (depth of each bank)
 )(
     // Control signals
-    input logic clk,
+    input reg clk,
     input logic rst_n,
     /*input logic valid_in,*/ // Keeping this, just in case we decide to add a valid_in signal (we should ideally)
 
