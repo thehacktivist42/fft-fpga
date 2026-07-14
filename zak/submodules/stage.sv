@@ -1,7 +1,7 @@
-`include "complex_multiply.v"
-`include "add_sub.v"
-`include "twiddle_fetch.v"
-`include "buffers.v"
+`include "complex_multiply.sv"
+`include "add_sub.sv"
+`include "twiddle_fetch.sv"
+`include "buffers.sv"
 
 module stage #(
     parameter WIDTH = 16,

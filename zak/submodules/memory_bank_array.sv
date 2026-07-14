@@ -1,5 +1,5 @@
 `timescale 1 ns / 1 ps
-`include "memory_bank.v"
+`include "memory_bank.sv"
 
 module memory_bank_array #(
     parameter IN_WIDTH = 32,

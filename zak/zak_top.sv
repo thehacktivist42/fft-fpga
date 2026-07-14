@@ -1,8 +1,8 @@
-`include "submodules/polyphase_demux.v"
-`include "submodules/memory_bank_array.v"
-`include "submodules/scheduler.v"
-`include "submodules/output_formatter.v"
-`include "fft_pipelined.v"
+`include "submodules/polyphase_demux.sv"
+`include "submodules/memory_bank_array.sv"
+`include "submodules/scheduler.sv"
+`include "submodules/output_formatter.sv"
+`include "fft_pipelined.sv"
 
 `timescale 1 ns / 1 ps
 module zak_top #(

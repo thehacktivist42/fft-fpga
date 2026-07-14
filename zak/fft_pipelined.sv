@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-`include "submodules/stage.v"
+`include "submodules/stage.sv"
 
 module fft_top #(
     parameter WIDTH = 16,

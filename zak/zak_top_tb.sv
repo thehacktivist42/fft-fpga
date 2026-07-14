@@ -81,7 +81,7 @@ module tb_zak_top;
 
         // Feed one complete frame (1024 samples)
         for (int i = 0; i < WIDTH; i++) begin
-            in_real <= (i << 15); 
+            in_real <= (i << 12); 
             in_imag <= 0;
             @(posedge clk);
         end
@@ -103,7 +103,7 @@ module tb_zak_top;
     always @(posedge clk) begin
         if (out_valid && !$isunknown(out_real) && samples_written < WIDTH) begin
             // Write purely the raw numbers to the text file (space separated)
-            $fdisplay(data_file, "%0f %0f", real'(out_real) / 32768.0, real'(out_imag) / 32768.0);
+            $fdisplay(data_file, "%.10f %.10f", real'(out_real) / 4096.0, real'(out_imag) / 4096.0);
             samples_written++;
         end
     end
