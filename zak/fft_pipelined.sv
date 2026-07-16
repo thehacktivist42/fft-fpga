@@ -53,6 +53,23 @@ module fft_top #(
     genvar i;
     generate
         for (i = 1; i <= NUM_STAGES; i = i + 1) begin : gen_fft_stages
+
+            stage #(
+                .WIDTH(WIDTH), 
+                .IN_WIDTH(IN_WIDTH), 
+                .TWIDDLE_WIDTH(TWIDDLE_WIDTH), 
+                .STAGE(i)
+            ) stg_inst (
+                .clk(clk), 
+                .rst_n(rst_n),
+                .in_real(stage_real[i-1]), 
+                .in_imag(stage_imag[i-1]), 
+                .sample_count(stage_count[i-1]), 
+                .rom_imag(rom_imag), 
+                .rom_real(rom_real),
+                .out_real(stage_real[i]), 
+                .out_imag(stage_imag[i])
+            );
             if (WIDTH == 2 || (WIDTH == 4 && i <= 2)) begin: gen_trivial_stage
                 stage_trivial #(
                     .WIDTH(WIDTH), 
@@ -89,27 +106,24 @@ module fft_top #(
 
             begin : gen_delay
                 // Delay = (Buffer Depth of current stage) + 4 cycles
-                localparam DELAY_DEPTH = (WIDTH >> i) + 4; 
-                
-                logic [$clog2(WIDTH)-1:0] delay_pipe [0:DELAY_DEPTH-1];
-                
-                always_ff @(posedge clk or negedge rst_n) begin
-                    if (!rst_n) begin
-                        for (int j = 0; j < DELAY_DEPTH; j++) begin
-                            delay_pipe[j] <= '0;
-                        end
-                    end else begin
-                        delay_pipe[0] <= stage_count[i-1];
-                        for (int j = 1; j < DELAY_DEPTH; j++) begin
-                            delay_pipe[j] <= delay_pipe[j-1];
-                        end
+            localparam DELAY_DEPTH = (WIDTH >> i) + 4; 
+            
+            logic [$clog2(WIDTH)-1:0] delay_pipe [0:DELAY_DEPTH-1];
+            
+            always_ff @(posedge clk or negedge rst_n) begin
+                if (!rst_n) begin
+                    for (int j = 0; j < DELAY_DEPTH; j++) begin
+                        delay_pipe[j] <= '0;
+                    end
+                end else begin
+                    delay_pipe[0] <= stage_count[i-1];
+                    for (int j = 1; j < DELAY_DEPTH; j++) begin
+                        delay_pipe[j] <= delay_pipe[j-1];
                     end
                 end
-                
-                // Connect the end of the shift register to the next stage's input
-                assign stage_count[i] = delay_pipe[DELAY_DEPTH-1];
             end
-        end
+            assign stage_count[i] = delay_pipe[DELAY_DEPTH-1];
+            end
     endgenerate
 
     assign out_real = stage_real[NUM_STAGES];
