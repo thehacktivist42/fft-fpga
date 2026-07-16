@@ -53,23 +53,6 @@ module fft_top #(
     genvar i;
     generate
         for (i = 1; i <= NUM_STAGES; i = i + 1) begin : gen_fft_stages
-
-            stage #(
-                .WIDTH(WIDTH), 
-                .IN_WIDTH(IN_WIDTH), 
-                .TWIDDLE_WIDTH(TWIDDLE_WIDTH), 
-                .STAGE(i)
-            ) stg_inst (
-                .clk(clk), 
-                .rst_n(rst_n),
-                .in_real(stage_real[i-1]), 
-                .in_imag(stage_imag[i-1]), 
-                .sample_count(stage_count[i-1]), 
-                .rom_imag(rom_imag), 
-                .rom_real(rom_real),
-                .out_real(stage_real[i]), 
-                .out_imag(stage_imag[i])
-            );
             if (WIDTH == 2 || (WIDTH == 4 && i <= 2)) begin: gen_trivial_stage
                 stage_trivial #(
                     .WIDTH(WIDTH), 
@@ -124,6 +107,7 @@ module fft_top #(
             end
             assign stage_count[i] = delay_pipe[DELAY_DEPTH-1];
             end
+        end
     endgenerate
 
     assign out_real = stage_real[NUM_STAGES];
