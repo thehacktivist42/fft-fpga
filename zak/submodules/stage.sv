@@ -9,16 +9,16 @@ module stage #(
     parameter TWIDDLE_WIDTH = 16,
     parameter STAGE = 1// stages start from 1
 )(
-    input logic clk,
-    input logic rst_n,
-    input logic signed [IN_WIDTH-1:0] in_real,
-    input logic signed [IN_WIDTH-1:0] in_imag,
-    input logic [$clog2(WIDTH) - 1:0] sample_count,
-    input logic signed [TWIDDLE_WIDTH-1:0] rom_real [0:WIDTH/4-1],
-    input logic signed [TWIDDLE_WIDTH-1:0] rom_imag [0:WIDTH/4-1],
+    input wire clk,
+    input wire rst_n,
+    input wire signed [IN_WIDTH-1:0] in_real,
+    input wire signed [IN_WIDTH-1:0] in_imag,
+    input wire [$clog2(WIDTH) - 1:0] sample_count,
+    input wire signed [TWIDDLE_WIDTH-1:0] rom_real [0:WIDTH/4-1],
+    input wire signed [TWIDDLE_WIDTH-1:0] rom_imag [0:WIDTH/4-1],
 
-    output logic signed [IN_WIDTH-1:0] out_real,
-    output logic signed [IN_WIDTH-1:0] out_imag
+    output wire signed [IN_WIDTH-1:0] out_real,
+    output wire signed [IN_WIDTH-1:0] out_imag
 );
 
 
@@ -39,8 +39,8 @@ module stage #(
     wire signed [TWIDDLE_WIDTH - 1:0] twiddle_real;
     wire signed [TWIDDLE_WIDTH - 1:0] twiddle_imag;
 
-    logic [SIZE - 2:0] angle_idx;
-    logic done;
+    wire [SIZE - 2:0] angle_idx;
+    wire done;
     assign done = 1'b1;
 
     wire signed [DATA_WIDTH:0] raw_added_real, raw_added_imag;
@@ -57,13 +57,13 @@ module stage #(
     wire signed [DATA_WIDTH - 1:0] multiplied_real;
     wire signed [DATA_WIDTH - 1:0] multiplied_imag;
 
-    logic switch;
-    logic switch_d1, switch_d2, switch_d3, switch_d4;
+    wire switch;
+    reg switch_d1, switch_d2, switch_d3, switch_d4;
     assign switch = sample_count[SIZE - STAGE];
     assign angle_idx = sample_count << (STAGE - 1);
 
     // Initialization counter to track when buffer garbage is fully flushed
-    logic [$clog2(DELAY+1):0] init_cnt;
+    reg [$clog2(DELAY+1):0] init_cnt;
     wire buff_out_valid;
 
     always_ff @(posedge clk or negedge rst_n) begin
@@ -97,8 +97,8 @@ module stage #(
     assign delay_in_real = (!rst_n) ? '0 : in_real;
     assign delay_in_imag = (!rst_n) ? '0 : in_imag;
 
-    logic signed [DATA_WIDTH:0] added_real_d1, added_real_d2;
-    logic signed [DATA_WIDTH:0] added_imag_d1, added_imag_d2;
+    reg signed [DATA_WIDTH:0] added_real_d1, added_real_d2;
+    reg signed [DATA_WIDTH:0] added_imag_d1, added_imag_d2;
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin

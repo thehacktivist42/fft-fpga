@@ -1,4 +1,3 @@
-
 `timescale 1 ns / 1 ps
 
 module scheduler #(
@@ -6,28 +5,28 @@ module scheduler #(
     parameter NUM_BANKS = 32,  
     parameter BANK_DEPTH = 32 
 )(
-    input logic clk,
-    input logic rst_n,
+    input wire clk,
+    input wire rst_n,
     
-    input logic [$clog2(WIDTH):0] counter, 
-    output logic [$clog2(NUM_BANKS) - 1:0]  bank_select,
-    output logic [$clog2(BANK_DEPTH) - 1:0] bank_raddr,
-    output logic [NUM_BANKS - 1:0]          bank_re,
-    output logic                            ping_pong_sel_r,
+    input wire [$clog2(WIDTH):0] counter, 
+    output reg [$clog2(NUM_BANKS) - 1:0]  bank_select,
+    output reg [$clog2(BANK_DEPTH) - 1:0] bank_raddr,
+    output reg [NUM_BANKS - 1:0]          bank_re,
+    output reg                            ping_pong_sel_r,
 
-    output logic read_valid 
+    output reg read_valid 
 );
 
     localparam [$clog2(WIDTH):0] TRIGGER_VAL = WIDTH - NUM_BANKS - BANK_DEPTH + 2;
-    localparam logic [NUM_BANKS-1:0] ONE_HOT_BASE = {{NUM_BANKS-1{1'b0}}, 1'b1};
+    localparam [NUM_BANKS-1:0] ONE_HOT_BASE = {{NUM_BANKS-1{1'b0}}, 1'b1};
 
-    logic reading;
-    logic trigger_now;
-    logic read_last_cycle;
-    logic write_buffer_sel;
+    reg reading;
+    wire trigger_now;
+    wire read_last_cycle;
+    reg write_buffer_sel;
     
-    logic [$clog2(NUM_BANKS)-1:0] next_bank_select;
-    logic [$clog2(NUM_BANKS)-1:0] bank_select_next_val;
+    wire [$clog2(NUM_BANKS)-1:0] next_bank_select;
+    reg [$clog2(NUM_BANKS)-1:0] bank_select_next_val;
 
     assign trigger_now     = (counter == TRIGGER_VAL);
     assign read_last_cycle = reading && (bank_raddr == BANK_DEPTH - 1) && (bank_select == NUM_BANKS - 1);

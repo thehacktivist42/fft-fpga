@@ -2,23 +2,23 @@ module complex_multiply #(
     parameter FFT_WIDTH = 36,
     parameter TWIDDLE_WIDTH = 16
 )(
-    input logic clk,
-    input logic rst_n,
+    input wire clk,
+    input wire rst_n,
 
-    input logic signed [TWIDDLE_WIDTH-1:0] mul1_real,
-    input logic signed [TWIDDLE_WIDTH-1:0] mul1_imag,
+    input wire signed [TWIDDLE_WIDTH-1:0] mul1_real,
+    input wire signed [TWIDDLE_WIDTH-1:0] mul1_imag,
 
-    input logic signed [FFT_WIDTH-1:0] mul2_real,
-    input logic signed [FFT_WIDTH-1:0] mul2_imag,
+    input wire signed [FFT_WIDTH-1:0] mul2_real,
+    input wire signed [FFT_WIDTH-1:0] mul2_imag,
 
-    output logic signed [FFT_WIDTH-1:0] out_real,
-    output logic signed [FFT_WIDTH-1:0] out_imag
+    output reg signed [FFT_WIDTH-1:0] out_real,
+    output reg signed [FFT_WIDTH-1:0] out_imag
 );
     localparam PROD_WIDTH = FFT_WIDTH + TWIDDLE_WIDTH;
     localparam SUM_WIDTH  = PROD_WIDTH + 1;
-    logic signed [PROD_WIDTH-1:0] prr, pii, pri, pir;
-    logic signed [SUM_WIDTH-1:0] real_full, imag_full;
-    localparam logic signed [SUM_WIDTH-1:0] round_val = SUM_WIDTH'(1) << (TWIDDLE_WIDTH - 2);
+    reg signed [PROD_WIDTH-1:0] prr, pii, pri, pir;
+    wire signed [SUM_WIDTH-1:0] real_full, imag_full;
+    localparam signed [SUM_WIDTH-1:0] round_val = SUM_WIDTH'(1) << (TWIDDLE_WIDTH - 2);
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin

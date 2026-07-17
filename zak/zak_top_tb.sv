@@ -13,8 +13,8 @@ module tb_zak_top;
     //--------------------------------------------------------
     // Clock / Reset
     //--------------------------------------------------------
-    logic clk;
-    logic rst_n;
+    reg clk;
+    reg rst_n;
 
     initial clk = 1'b0;
     always #5 clk = ~clk; // 100 MHz Clock
@@ -22,8 +22,8 @@ module tb_zak_top;
     //--------------------------------------------------------
     // Signals
     //--------------------------------------------------------
-    logic signed [IN_WIDTH-1:0] in_real;
-    logic signed [IN_WIDTH-1:0] in_imag;
+    reg signed [IN_WIDTH-1:0] in_real;
+    reg signed [IN_WIDTH-1:0] in_imag;
 
     wire signed [IN_WIDTH-1:0] out_real;
     wire signed [IN_WIDTH-1:0] out_imag;

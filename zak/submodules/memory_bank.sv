@@ -7,28 +7,28 @@ module memory_bank #(
     parameter BANK_DEPTH = 32 // the N in the M x N representation of the transform (depth of each bank)
 )(
     // Control signals
-    input logic clk,
+    input wire clk,
 
     // Data inputs
-    input logic signed [IN_WIDTH - 1:0] in_real,
-    input logic signed [IN_WIDTH - 1:0] in_imag,
+    input wire signed [IN_WIDTH - 1:0] in_real,
+    input wire signed [IN_WIDTH - 1:0] in_imag,
 
     // Write port
-    input logic we,
-    input logic [$clog2(BANK_DEPTH) - 1:0] waddr,
+    input wire we,
+    input wire [$clog2(BANK_DEPTH) - 1:0] waddr,
 
     // Read port | Data is available one clock cycle after 're' and 'raddr' are asserted.
-    input logic re,
-    input logic [$clog2(BANK_DEPTH) - 1:0] raddr,
+    input wire re,
+    input wire [$clog2(BANK_DEPTH) - 1:0] raddr,
     
     // Outputs
-    output logic signed [IN_WIDTH - 1:0] out_real,
-    output logic signed [IN_WIDTH - 1:0] out_imag
+    output reg signed [IN_WIDTH - 1:0] out_real,
+    output reg signed [IN_WIDTH - 1:0] out_imag
 
 );
 
-    logic signed [IN_WIDTH - 1:0] mem_real [0:BANK_DEPTH - 1];
-    logic signed [IN_WIDTH - 1:0] mem_imag [0:BANK_DEPTH - 1];
+    reg signed [IN_WIDTH - 1:0] mem_real [0:BANK_DEPTH - 1];
+    reg signed [IN_WIDTH - 1:0] mem_imag [0:BANK_DEPTH - 1];
 
     always_ff @(posedge clk) begin
         // Write port

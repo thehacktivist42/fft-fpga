@@ -8,15 +8,15 @@ module fft_top #(
     parameter IN_WIDTH = 32,
     parameter TWIDDLE_WIDTH = 16
 )(
-    input  logic clk,
-    input  logic rst_n,
-    input  logic signed [IN_WIDTH-1:0] in_real,
-    input  logic signed [IN_WIDTH-1:0] in_imag,
-    input  logic [$clog2(WIDTH)-1:0] sample_count,
+    input  wire clk,
+    input  wire rst_n,
+    input  wire signed [IN_WIDTH-1:0] in_real,
+    input  wire signed [IN_WIDTH-1:0] in_imag,
+    input  wire [$clog2(WIDTH)-1:0] sample_count,
 
-    output logic signed [IN_WIDTH-1:0] out_real,
-    output logic signed [IN_WIDTH-1:0] out_imag,
-    output logic [$clog2(WIDTH) - 1:0] out_sample_count
+    output wire signed [IN_WIDTH-1:0] out_real,
+    output wire signed [IN_WIDTH-1:0] out_imag,
+    output wire [$clog2(WIDTH) - 1:0] out_sample_count
 );
 
     //localparameters
@@ -26,15 +26,15 @@ module fft_top #(
     // Arrays to interconnect the data and control signals
     wire signed [IN_WIDTH-1:0] stage_real [0:NUM_STAGES];
     wire signed [IN_WIDTH-1:0] stage_imag [0:NUM_STAGES];
-    logic [$clog2(WIDTH)-1:0]  stage_count [0:NUM_STAGES];
+    wire [$clog2(WIDTH)-1:0]  stage_count [0:NUM_STAGES];
 
     assign stage_real[0] = in_real;
     assign stage_imag[0] = in_imag;
     assign stage_count[0] = sample_count;
 
     // ROM arrays for twiddle factors
-    (* ram_style="distributed" *) logic signed [TWIDDLE_WIDTH-1:0] rom_real [0:QUARTER_WIDTH-1];
-    (* ram_style="distributed" *) logic signed [TWIDDLE_WIDTH-1:0] rom_imag [0:QUARTER_WIDTH-1];
+    (* ram_style="distributed" *) reg signed [TWIDDLE_WIDTH-1:0] rom_real [0:QUARTER_WIDTH-1];
+    (* ram_style="distributed" *) reg signed [TWIDDLE_WIDTH-1:0] rom_imag [0:QUARTER_WIDTH-1];
 
     generate
         if (WIDTH >= 8) begin : gen_rom_init
@@ -89,23 +89,18 @@ module fft_top #(
 
             begin : gen_delay
                 // Delay = (Buffer Depth of current stage) + 4 cycles
-            localparam DELAY_DEPTH = (WIDTH >> i) + 4; 
-            
-            logic [$clog2(WIDTH)-1:0] delay_pipe [0:DELAY_DEPTH-1];
-            
-            always_ff @(posedge clk or negedge rst_n) begin
-                if (!rst_n) begin
-                    for (int j = 0; j < DELAY_DEPTH; j++) begin
-                        delay_pipe[j] <= '0;
-                    end
-                end else begin
+                localparam DELAY_DEPTH = (WIDTH >> i) + 4; 
+                
+                reg [$clog2(WIDTH)-1:0] delay_pipe [0:DELAY_DEPTH-1];
+                
+                // Reset removed to allow Vivado to infer efficient SRL primitives
+                always_ff @(posedge clk) begin
                     delay_pipe[0] <= stage_count[i-1];
                     for (int j = 1; j < DELAY_DEPTH; j++) begin
                         delay_pipe[j] <= delay_pipe[j-1];
                     end
                 end
-            end
-            assign stage_count[i] = delay_pipe[DELAY_DEPTH-1];
+                assign stage_count[i] = delay_pipe[DELAY_DEPTH-1];
             end
         end
     endgenerate

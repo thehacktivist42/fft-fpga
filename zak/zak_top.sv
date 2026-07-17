@@ -11,23 +11,23 @@ module zak_top #(
     parameter NUM_BANKS = 32,  
     parameter BANK_DEPTH = 32 
 )(
-    input logic clk,
-    input logic rst_n,
-    input logic signed [IN_WIDTH-1:0] in_real,
-    input logic signed [IN_WIDTH-1:0] in_imag,
-    output logic signed [IN_WIDTH-1:0] out_real,
-    output logic signed [IN_WIDTH-1:0] out_imag,
-    output logic out_valid
+    input wire clk,
+    input wire rst_n,
+    input wire signed [IN_WIDTH-1:0] in_real,
+    input wire signed [IN_WIDTH-1:0] in_imag,
+    output wire signed [IN_WIDTH-1:0] out_real,
+    output wire signed [IN_WIDTH-1:0] out_imag,
+    output wire out_valid
 );
 
     // Demux to Array/Scheduler
-    logic signed [IN_WIDTH-1:0] broadcast_real;
-    logic signed [IN_WIDTH-1:0] broadcast_imag;
-    logic [NUM_BANKS-1:0]       bank_we;
-    logic [$clog2(BANK_DEPTH)-1:0] bank_waddr;
-    logic [$clog2(WIDTH):0]     counter;
-    logic                       frame_done;
-    logic                       ping_pong_select; 
+    wire signed [IN_WIDTH-1:0] broadcast_real;
+    wire signed [IN_WIDTH-1:0] broadcast_imag;
+    wire [NUM_BANKS-1:0]       bank_we;
+    wire [$clog2(BANK_DEPTH)-1:0] bank_waddr;
+    wire [$clog2(WIDTH):0]     counter;
+    wire                       frame_done;
+    wire                       ping_pong_select; 
 
     polyphase_demux #(
         .IN_WIDTH(IN_WIDTH),
@@ -49,11 +49,11 @@ module zak_top #(
     );
 
     // Scheduler to Array
-    logic [$clog2(NUM_BANKS)-1:0]  bank_select;
-    logic [$clog2(BANK_DEPTH)-1:0] bank_raddr;
-    logic [NUM_BANKS-1:0]          bank_re;
-    logic                          ping_pong_sel_r;
-    logic                          read_valid;
+    wire [$clog2(NUM_BANKS)-1:0]  bank_select;
+    wire [$clog2(BANK_DEPTH)-1:0] bank_raddr;
+    wire [NUM_BANKS-1:0]          bank_re;
+    wire                          ping_pong_sel_r;
+    wire                          read_valid;
 
     scheduler #(
         .WIDTH(WIDTH),
@@ -71,8 +71,8 @@ module zak_top #(
     );
 
     // Array to FFT
-    logic signed [IN_WIDTH-1:0] fft_in_real;
-    logic signed [IN_WIDTH-1:0] fft_in_imag;
+    wire signed [IN_WIDTH-1:0] fft_in_real;
+    wire signed [IN_WIDTH-1:0] fft_in_imag;
 
     memory_bank_array #(
         .IN_WIDTH(IN_WIDTH),
@@ -93,7 +93,7 @@ module zak_top #(
         .out_imag(fft_in_imag)
     );
 
-    logic [$clog2(BANK_DEPTH)-1:0] bank_raddr_d;
+    reg [$clog2(BANK_DEPTH)-1:0] bank_raddr_d;
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -104,9 +104,9 @@ module zak_top #(
     end
 
     // FFT to Output Formatter
-    logic signed [IN_WIDTH-1:0] fft_out_real;
-    logic signed [IN_WIDTH-1:0] fft_out_imag;
-    logic [$clog2(BANK_DEPTH) - 1:0] fft_sample_count_out;
+    wire signed [IN_WIDTH-1:0] fft_out_real;
+    wire signed [IN_WIDTH-1:0] fft_out_imag;
+    wire [$clog2(BANK_DEPTH) - 1:0] fft_sample_count_out;
 
     fft_top #(
         .WIDTH(BANK_DEPTH),

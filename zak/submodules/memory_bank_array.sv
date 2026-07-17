@@ -7,28 +7,28 @@ module memory_bank_array #(
     parameter NUM_BANKS = 32, 
     parameter BANK_DEPTH = 32 
 )(
-    input logic clk,
-    input logic ping_pong_sel_w, 
-    input logic ping_pong_sel_r, 
+    input wire clk,
+    input wire ping_pong_sel_w, 
+    input wire ping_pong_sel_r, 
 
-    input logic signed [IN_WIDTH - 1:0] in_real,
-    input logic signed [IN_WIDTH - 1:0] in_imag,
+    input wire signed [IN_WIDTH - 1:0] in_real,
+    input wire signed [IN_WIDTH - 1:0] in_imag,
 
-    input logic [NUM_BANKS - 1:0] bank_we, 
-    input logic [$clog2(BANK_DEPTH) - 1:0] bank_waddr, 
+    input wire [NUM_BANKS - 1:0] bank_we, 
+    input wire [$clog2(BANK_DEPTH) - 1:0] bank_waddr, 
 
-    input logic [$clog2(NUM_BANKS) - 1:0] bank_select, 
-    input logic [$clog2(BANK_DEPTH) - 1:0] bank_raddr, 
-    input logic [NUM_BANKS-1:0] bank_re, 
+    input wire [$clog2(NUM_BANKS) - 1:0] bank_select, 
+    input wire [$clog2(BANK_DEPTH) - 1:0] bank_raddr, 
+    input wire [NUM_BANKS-1:0] bank_re, 
 
-    output logic signed [IN_WIDTH - 1:0] out_real,
-    output logic signed [IN_WIDTH - 1:0] out_imag
+    output reg signed [IN_WIDTH - 1:0] out_real,
+    output reg signed [IN_WIDTH - 1:0] out_imag
 );
 
-    logic signed [IN_WIDTH - 1:0] mem_out_real [0:NUM_BANKS - 1];
-    logic signed [IN_WIDTH - 1:0] mem_out_imag [0:NUM_BANKS - 1];
+    wire signed [IN_WIDTH - 1:0] mem_out_real [0:NUM_BANKS - 1];
+    wire signed [IN_WIDTH - 1:0] mem_out_imag [0:NUM_BANKS - 1];
 
-    logic [$clog2(NUM_BANKS) - 1:0] bank_select_reg;
+    reg [$clog2(NUM_BANKS) - 1:0] bank_select_reg;
     always_ff @(posedge clk) begin
         bank_select_reg <= bank_select;
     end

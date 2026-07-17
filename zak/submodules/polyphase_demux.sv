@@ -12,30 +12,30 @@ module polyphase_demux #(
     parameter BANK_DEPTH = 32 // the N in the M x N representation of the transform (depth of each bank)
 )(
     // Control signals
-    input logic clk,
-    input logic rst_n,
-    /*input logic valid_in,*/ // Keeping this, just in case we decide to add a valid_in signal (we should ideally)
+    input wire clk,
+    input wire rst_n,
+    /*input wire valid_in,*/ // Keeping this, just in case we decide to add a valid_in signal (we should ideally)
 
 
-    input logic signed [IN_WIDTH - 1:0] in_real,
-    input logic signed [IN_WIDTH - 1:0] in_imag,
+    input wire signed [IN_WIDTH - 1:0] in_real,
+    input wire signed [IN_WIDTH - 1:0] in_imag,
 
     // Outputs to the memory banks
     output wire signed [IN_WIDTH - 1:0] broadcast_real,
     output wire signed [IN_WIDTH - 1:0] broadcast_imag,
-    output logic [NUM_BANKS - 1:0] bank_we, // One-hot write enable (column)
-    output logic [$clog2(BANK_DEPTH) - 1:0] bank_waddr, // Shared write address for all banks (row)
-    output logic [$clog2(WIDTH) :0] counter,
-    output logic frame_done, // Goes high for 1 cycle when a full 2D grid is populated
-    output logic ping_pong_select
+    output reg [NUM_BANKS - 1:0] bank_we, // One-hot write enable (column)
+    output reg [$clog2(BANK_DEPTH) - 1:0] bank_waddr, // Shared write address for all banks (row)
+    output reg [$clog2(WIDTH) :0] counter,
+    output reg frame_done, // Goes high for 1 cycle when a full 2D grid is populated
+    output reg ping_pong_select
     );
 
     // Calculate bit-widths needed for internal hardware counters
     localparam BANK_BITS = $clog2(NUM_BANKS);
     localparam ADDR_BITS = $clog2(BANK_DEPTH);
 
-    logic [BANK_BITS - 1:0] phase_cnt; // Sweeps horizontally across banks
-    logic [ADDR_BITS - 1:0] addr_cnt; // Sweeps vertically through a bank
+    reg [BANK_BITS - 1:0] phase_cnt; // Sweeps horizontally across banks
+    reg [ADDR_BITS - 1:0] addr_cnt; // Sweeps vertically through a bank
 
     /*
     Inferring multiplexers is avoided by simply broadcasting the input data to all banks.
@@ -90,5 +90,3 @@ module polyphase_demux #(
         end
     end
 endmodule
-
-
