@@ -48,10 +48,16 @@ module zak_top #(
         .ping_pong_select(ping_pong_select)
     );
 
-    // Scheduler to Array
-    wire [$clog2(NUM_BANKS)-1:0]  bank_select;
-    wire [$clog2(BANK_DEPTH)-1:0] bank_raddr;
-    wire [NUM_BANKS-1:0]          bank_re;
+    // Scheduler to Array (Raw wires to prevent XSim delta-cycle skew)
+    wire [$clog2(NUM_BANKS)-1:0]  bank_select_raw;
+    wire [$clog2(BANK_DEPTH)-1:0] bank_raddr_raw;
+    wire [NUM_BANKS-1:0]          bank_re_raw;
+    
+    // Registered control signals
+    reg [$clog2(NUM_BANKS)-1:0]  bank_select;
+    reg [$clog2(BANK_DEPTH)-1:0] bank_raddr;
+    reg [NUM_BANKS-1:0]          bank_re;
+    
     wire                          ping_pong_sel_r;
     wire                          read_valid;
 
@@ -63,12 +69,25 @@ module zak_top #(
         .clk(clk),
         .rst_n(rst_n),
         .counter(counter),
-        .bank_select(bank_select),
-        .bank_raddr(bank_raddr),
-        .bank_re(bank_re),
+        .bank_select(bank_select_raw),
+        .bank_raddr(bank_raddr_raw),
+        .bank_re(bank_re_raw),
         .ping_pong_sel_r(ping_pong_sel_r),
         .read_valid(read_valid)
     );
+
+    // Synchronize scheduler control signals to lock Vivado delta cycles
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            bank_select <= '0;
+            bank_raddr  <= '0;
+            bank_re     <= '0;
+        end else begin
+            bank_select <= bank_select_raw;
+            bank_raddr  <= bank_raddr_raw;
+            bank_re     <= bank_re_raw;
+        end
+    end
 
     // Array to FFT
     wire signed [IN_WIDTH-1:0] fft_in_real;
