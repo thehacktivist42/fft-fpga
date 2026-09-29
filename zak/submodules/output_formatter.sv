@@ -7,7 +7,7 @@ module output_formatter #(
     // Control signals
     input wire clk,
     input wire rst_n,
-    /*input wire valid_in,*/ // Keeping this, just in case we decide to add a valid_in signal (we should ideally)
+    input wire valid_in, // Keeping this, just in case we decide to add a valid_in signal (we should ideally)
 
     // Data inputs
     input wire signed [IN_WIDTH - 1:0] fft_in_real,
@@ -70,12 +70,14 @@ module output_formatter #(
             pipeline_full <= 1'b0;
         end
         else begin
-            // Write logic
-            mem_real[physical_waddr] <= fft_in_real;
-            mem_imag[physical_waddr] <= fft_in_imag;
-            if (fft_sample_count == FFT_WIDTH - 1) begin
-                ping_pong_w <= ~ping_pong_w;
-                pipeline_full <= 1'b1;
+            // Write logic (Protected against Vivado X-poisoning)
+            if (valid_in && !$isunknown(fft_sample_count)) begin
+                mem_real[physical_waddr] <= fft_in_real;
+                mem_imag[physical_waddr] <= fft_in_imag;
+                if (fft_sample_count == FFT_WIDTH - 1) begin
+                    ping_pong_w <= ~ping_pong_w;
+                    pipeline_full <= 1'b1;
+                end
             end
 
             // Read logic

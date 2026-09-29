@@ -113,10 +113,15 @@ module stage_trivial #(
     assign delayed_real = buff_out_valid ? raw_delayed_real : {DATA_WIDTH{1'b0}};
     assign delayed_imag = buff_out_valid ? raw_delayed_imag : {DATA_WIDTH{1'b0}};
 
+     // Mask feedback X's
+    wire signed [DATA_WIDTH - 1:0] safe_feedback_real = buff_out_valid ? feedback_delayed_real : {DATA_WIDTH{1'b0}};
+    wire signed [DATA_WIDTH - 1:0] safe_feedback_imag = buff_out_valid ? feedback_delayed_imag : {DATA_WIDTH{1'b0}};
+
+    // Fix multiplexer timing (switch_d2) and use safe feedback
     assign out_real = (!rst_n) ? {IN_WIDTH{1'b0}} : 
-                      (switch_d4 ? added_real_d2[DATA_WIDTH-1:0]: feedback_delayed_real);
+                      (switch_d4 ? added_real_d2[DATA_WIDTH-1:0] : safe_feedback_real);
     assign out_imag = (!rst_n) ? {IN_WIDTH{1'b0}} : 
-                      (switch_d4 ? added_imag_d2[DATA_WIDTH-1:0] : feedback_delayed_imag);
+                      (switch_d4 ? added_imag_d2[DATA_WIDTH-1:0] : safe_feedback_imag);
 
     buffer #(.DEPTH(DELAY), .DATA_WIDTH(DATA_WIDTH))
         buff_inst(

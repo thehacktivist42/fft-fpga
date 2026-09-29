@@ -13,10 +13,12 @@ module fft_top #(
     input  wire signed [IN_WIDTH-1:0] in_real,
     input  wire signed [IN_WIDTH-1:0] in_imag,
     input  wire [$clog2(WIDTH)-1:0] sample_count,
+    input  wire in_valid,
 
     output wire signed [IN_WIDTH-1:0] out_real,
     output wire signed [IN_WIDTH-1:0] out_imag,
-    output wire [$clog2(WIDTH) - 1:0] out_sample_count
+    output wire [$clog2(WIDTH) - 1:0] out_sample_count,
+    output wire out_valid
 );
 
     //localparameters
@@ -27,10 +29,12 @@ module fft_top #(
     wire signed [IN_WIDTH-1:0] stage_real [0:NUM_STAGES];
     wire signed [IN_WIDTH-1:0] stage_imag [0:NUM_STAGES];
     wire [$clog2(WIDTH)-1:0]  stage_count [0:NUM_STAGES];
+    wire stage_valid [0:NUM_STAGES];
 
     assign stage_real[0] = in_real;
     assign stage_imag[0] = in_imag;
     assign stage_count[0] = sample_count;
+    assign stage_valid[0] = in_valid;
 
     // ROM arrays for twiddle factors
     (* ram_style="distributed" *) reg signed [TWIDDLE_WIDTH-1:0] rom_real [0:QUARTER_WIDTH-1];
@@ -92,15 +96,19 @@ module fft_top #(
                 localparam DELAY_DEPTH = (WIDTH >> i) + 4; 
                 
                 reg [$clog2(WIDTH)-1:0] delay_pipe [0:DELAY_DEPTH-1];
+                reg valid_pipe [0:DELAY_DEPTH-1];
                 
                 // Reset removed to allow Vivado to infer efficient SRL primitives
                 always_ff @(posedge clk) begin
                     delay_pipe[0] <= stage_count[i-1];
+                    valid_pipe[0] <= stage_valid[i-1];
                     for (int j = 1; j < DELAY_DEPTH; j++) begin
                         delay_pipe[j] <= delay_pipe[j-1];
+                        valid_pipe[j] <= valid_pipe[j-1];
                     end
                 end
                 assign stage_count[i] = delay_pipe[DELAY_DEPTH-1];
+                assign stage_valid[i] = valid_pipe[DELAY_DEPTH-1];
             end
         end
     endgenerate
@@ -108,5 +116,6 @@ module fft_top #(
     assign out_real = stage_real[NUM_STAGES];
     assign out_imag = stage_imag[NUM_STAGES];
     assign out_sample_count = stage_count[NUM_STAGES];
+    assign out_valid = stage_valid[NUM_STAGES];
 
 endmodule

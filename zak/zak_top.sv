@@ -94,12 +94,15 @@ module zak_top #(
     );
 
     reg [$clog2(BANK_DEPTH)-1:0] bank_raddr_d;
+    reg read_valid_d;
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             bank_raddr_d <= '0;
+            read_valid_d <= 1'b0;
         end else begin
             bank_raddr_d <= bank_raddr;
+            read_valid_d <= read_valid;
         end
     end
 
@@ -107,6 +110,7 @@ module zak_top #(
     wire signed [IN_WIDTH-1:0] fft_out_real;
     wire signed [IN_WIDTH-1:0] fft_out_imag;
     wire [$clog2(BANK_DEPTH) - 1:0] fft_sample_count_out;
+    wire fft_out_valid_wire;
 
     fft_top #(
         .WIDTH(BANK_DEPTH),
@@ -115,12 +119,14 @@ module zak_top #(
     ) fft_inst (
         .clk(clk),
         .rst_n(rst_n),
+        .in_valid(read_valid_d),
         .in_real(fft_in_real),
         .in_imag(fft_in_imag),
         .sample_count(bank_raddr_d),
         .out_real(fft_out_real),
         .out_imag(fft_out_imag),
-        .out_sample_count(fft_sample_count_out)
+        .out_sample_count(fft_sample_count_out),
+        .out_valid(fft_out_valid_wire)
     );
 
     output_formatter #(
@@ -129,6 +135,7 @@ module zak_top #(
     ) output_formatter_inst (
         .clk(clk),
         .rst_n(rst_n),
+        .valid_in(fft_out_valid_wire),
         .fft_in_real(fft_out_real),
         .fft_in_imag(fft_out_imag),
         .fft_sample_count(fft_sample_count_out),

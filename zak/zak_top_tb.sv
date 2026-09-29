@@ -86,7 +86,7 @@ module tb_zak_top;
         in_real = 0;
         in_imag = 0;
 
-        repeat (10) @(posedge clk);
+        repeat (50) @(posedge clk);
         rst_n = 1;
 
         // Feed one complete frame (1024 samples)

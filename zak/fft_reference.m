@@ -4,7 +4,7 @@ outFile = "data/ref.json";
 
 N = 1024;
 
-data = readmatrix("data/input.txt");
+data = readmatrix("input.txt");
 X = data(:, 1) + 1i * data(:, 2);
 tic;
 X_fft = fft(X, N);

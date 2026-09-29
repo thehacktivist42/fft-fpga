@@ -39,7 +39,7 @@ for bank = 1:M
 end
 
 %% Save reference
-fid = fopen('zak/golden_reference.txt','w');
+fid = fopen('golden_reference.txt','w');
 
 for k = 1:length(golden)
     fprintf(fid,'%.10f %.10f\n',real(golden(k)),imag(golden(k)));
